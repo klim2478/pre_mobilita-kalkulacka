@@ -51,7 +51,7 @@ dph_check = st.sidebar.checkbox("Zobrazit ceny s DPH (12 %)", value=False)
 
 m = models[sel_name]
 coeff = 1.12 if dph_check else 1.0
-tax_label = "VČETNĚ DPH 12 %" if dph_check else "BEZ DPH"
+tax_label = "Včetně DPH 12 %" if dph_check else "Bez DPH"
 
 # Výpočty
 naklady_svj_pater = (m["pater_svj"] + m["hdv_navyseni"]) * coeff
@@ -100,7 +100,7 @@ def create_word():
     doc = Document()
     
     # 1. Titulka
-    title = doc.add_heading('Indikativní nabídka: PRE POINT RESIDENT', 0)
+    title = doc.add_heading('Indikativní nákladovost emobility v SVJ/BD dle vzorové instalace', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     p = doc.add_paragraph()

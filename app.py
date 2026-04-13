@@ -59,7 +59,7 @@ naklad_uzivatel_rozvody = ((m["zakaznik_celkem"] * (1 - podil_svj / 100)) / m["m
 celkem_uzivatel = (naklad_uzivatel_rozvody + (m["wallbox_ks"] * coeff))
 
 # --- ZOBRAZENÍ V APP ---
-st.title(f"Indikativní kalkulace: {projekt_nazev}")
+st.title(f"Prezentace nákladů vzorového projektu: {projekt_nazev}")
 st.subheader(f"Ceny jsou uvedeny: {tax_label}")
 
 col1, col2 = st.columns(2)

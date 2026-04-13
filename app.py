@@ -10,8 +10,8 @@ st.set_page_config(page_title="PRE Nabídkový generátor", layout="wide")
 
 # --- DATA A LOGIKA ---
 models = {
-    "Model 3.1 - Klasická realizace (21 míst)": {
-        "popis": "Realizace na stávající přívod: 21 míst, 50 % penetrace (bez úpravy HDV).",
+    "Model 3.1 - Realizace na stávající přívod (21 míst)": {
+        "popis": "Realizace na stávající přívod, kabelové vedení: 21 míst, 50 % penetrace (bez úpravy HDV).",
         "pater_svj": 450000,
         "hdv_navyseni": 0,
         "zakaznik_celkem": 1197000,
@@ -41,7 +41,7 @@ models = {
 
 # --- SIDEBAR VSTUPY ---
 st.sidebar.header("📝 Údaje pro nabídku")
-projekt_nazev = st.sidebar.text_input("Název projektu / SVJ:", "SVJ Trojská")
+projekt_nazev = st.sidebar.text_input("Název projektu / SVJ:", "SVJ ")
 sel_name = st.sidebar.selectbox("Varianta realizace:", list(models.keys()))
 podil_svj = st.sidebar.slider("Podíl SVJ na rozvodech v garážích (%)", 0, 100, 0)
 dph_check = st.sidebar.checkbox("Ceny s DPH 12 %")
@@ -76,7 +76,7 @@ def create_word():
     doc = Document()
     
     # Hlavička
-    title = doc.add_heading('Indikativní nabídka vybudování dobíjecí infrastruktury', 0)
+    title = doc.add_heading('Indikativní kalkulačka nákladů e-mobility v SVJ/BD dle vzorové instalace', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     p = doc.add_paragraph()

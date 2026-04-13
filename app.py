@@ -50,7 +50,7 @@ m = models[sel_name]
 coeff = 1.12 if dph_check else 1.0
 tax_label = "s DPH" if dph_check else "bez DPH"
 
-# Výpočty dle vzoru z obrázku
+# Výpočty
 naklady_svj_pater = (m["pater_svj"] + m["hdv_navyseni"]) * coeff
 extra_z_garazi = (m["zakaznik_celkem"] * (podil_svj / 100)) * coeff
 celkem_svj_investice = naklady_svj_pater + extra_z_garazi
@@ -61,15 +61,42 @@ celkem_uzivatel = (naklad_uzivatel_rozvody + (m["wallbox_ks"] * coeff))
 # --- ZOBRAZENÍ V APP ---
 st.title(f"Indikativní kalkulace: {projekt_nazev}")
 st.subheader(f"Varianta: {sel_name}")
+st.info(m["popis"])
 
+# Přehledové metriky
 col1, col2 = st.columns(2)
 with col1:
     st.metric("Celková investice SVJ", f"{celkem_svj_investice:,.0f} Kč".replace(",", " "))
-    st.write(f"Včetně přípravy páteře a HDV ({tax_label})")
-
 with col2:
-    st.metric("Náklad na 1 uživatele", f"{celkem_uzivatel:,.0f} Kč".replace(",", " "))
-    st.write(f"Včetně wallboxu a instalace ({tax_label})")
+    st.metric("Náklad na 1 uživatele (vč. WB)", f"{celkem_uzivatel:,.0f} Kč".replace(",", " "))
+
+st.divider()
+
+# Tabulka nákladů (přehledná struktura)
+st.subheader("Ekonomické rozdělení nákladů")
+table_data = [
+    {
+        "Položka": "Páteřní rozvody a HDV",
+        f"Celkem objekt ({tax_label})": f"{(m['pater_svj'] + m['hdv_navyseni']) * coeff:,.0f} Kč".replace(",", " "),
+        f"Hradí SVJ ({tax_label})": f"{(m['pater_svj'] + m['hdv_navyseni']) * coeff:,.0f} Kč".replace(",", " "),
+        f"Hradí 1 Uživatel ({tax_label})": "0 Kč"
+    },
+    {
+        "Položka": "Zákaznické rozvody (k park. místu)",
+        f"Celkem objekt ({tax_label})": f"{m['zakaznik_celkem'] * coeff:,.0f} Kč".replace(",", " "),
+        f"Hradí SVJ ({tax_label})": f"{extra_z_garazi:,.0f} Kč".replace(",", " "),
+        f"Hradí 1 Uživatel ({tax_label})": f"{naklad_uzivatel_rozvody:,.0f} Kč".replace(",", " ")
+    },
+    {
+        "Položka": "Wallbox vč. instalace",
+        f"Celkem objekt ({tax_label})": f"{(m['wallbox_ks'] * m['mist']) * coeff:,.0f} Kč".replace(",", " "),
+        f"Hradí SVJ ({tax_label})": "0 Kč",
+        f"Hradí 1 Uživatel ({tax_label})": f"{m['wallbox_ks'] * coeff:,.0f} Kč".replace(",", " ")
+    }
+]
+
+df_table = pd.DataFrame(table_data)
+st.table(df_table)
 
 # --- GENERÁTOR WORDU ---
 def create_word():
@@ -83,28 +110,22 @@ def create_word():
     p.add_run(f'Projekt: {projekt_nazev}').bold = True
     p.add_run(f'\nModel: {sel_name}\nPopis: {m["popis"]}')
 
-    # Tabulka nákladů (dle tvého vzoru)
+    # Tabulka nákladů ve Wordu (sloučená s logikou aplikace)
     doc.add_heading('Ekonomické rozdělení nákladů', level=1)
     table = doc.add_table(rows=1, cols=4)
     table.style = 'Light Shading Accent 1'
     hdr_cells = table.rows[0].cells
     hdr_cells[0].text = 'Položka'
-    hdr_cells[1].text = f'Celkem ({tax_label})'
-    hdr_cells[2].text = 'Hradí SVJ'
-    hdr_cells[3].text = 'Hradí Uživatel'
+    hdr_cells[1].text = f'Celkem objekt ({tax_label})'
+    hdr_cells[2].text = f'Hradí SVJ ({tax_label})'
+    hdr_cells[3].text = f'Hradí 1 Uživatel ({tax_label})'
 
-    # Data řádky
-    row1 = table.add_row().cells
-    row1[0].text = 'Páteřní rozvody a HDV'
-    row1[1].text = f'{(m["pater_svj"] + m["hdv_navyseni"])*coeff:,.0f} Kč'
-    row1[2].text = f'{(m["pater_svj"] + m["hdv_navyseni"])*coeff:,.0f} Kč'
-    row1[3].text = '0 Kč'
-
-    row2 = table.add_row().cells
-    row2[0].text = 'Zákaznické rozvody (garáže)'
-    row2[1].text = f'{m["zakaznik_celkem"]*coeff:,.0f} Kč'
-    row2[2].text = f'{extra_z_garazi:,.0f} Kč'
-    row2[3].text = f'{(m["zakaznik_celkem"]*coeff - extra_z_garazi):,.0f} Kč'
+    for row_data in table_data:
+        row_cells = table.add_row().cells
+        row_cells[0].text = str(row_data["Položka"])
+        row_cells[1].text = str(row_data[f"Celkem objekt ({tax_label})"])
+        row_cells[2].text = str(row_data[f"Hradí SVJ ({tax_label})"])
+        row_cells[3].text = str(row_data[f"Hradí 1 Uživatel ({tax_label})"])
 
     # Argumentace (Metodika)
     doc.add_heading('Proč zvolit toto řešení (Metodika PRE)', level=1)

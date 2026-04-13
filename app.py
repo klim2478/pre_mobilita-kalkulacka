@@ -100,7 +100,7 @@ st.table(pd.DataFrame(table_data))
 def create_word():
     doc = Document()
     
-    title = doc.add_heading('Indikativní kalkulačka nákladů e-mobility', 0)
+    title = doc.add_heading('Indikativní kalkulačka nákladů e-mobility v SVJ/BD dle vzorové instalace', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     p = doc.add_paragraph()

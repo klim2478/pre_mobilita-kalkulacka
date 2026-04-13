@@ -12,6 +12,7 @@ st.set_page_config(page_title="PRE Nabídkový generátor", layout="wide")
 models = {
     "Model 3.1 - Realizace na stávající přívod (21 míst)": {
         "popis": "Realizace na stávající přívod, kabelové vedení: 21 míst, 50 % penetrace (bez úpravy HDV).",
+        "rozsiritelnost": "Nízká – omezeno kapacitou stávajícího jističe a místem v kabelových trasách.",
         "pater_svj": 450000,
         "hdv_navyseni": 0,
         "zakaznik_celkem": 1197000,
@@ -21,6 +22,7 @@ models = {
     },
     "Model 3.2 - Přípojnicové řešení (100 míst)": {
         "popis": "Realizace 100 míst, 100 % penetrace – přípojnicové vedení (obsahuje nové HDV a navýšení kapacity).",
+        "rozsiritelnost": "Vysoká – páteřní systém umožňuje snadné připojení jakéhokoliv stání v budoucnu bez nutnosti dalších stavebních úprav.",
         "pater_svj": 1250000,
         "hdv_navyseni": 580000,
         "zakaznik_celkem": 3500000,
@@ -30,6 +32,7 @@ models = {
     },
     "Model 3.3 - Malá realizace (10 míst)": {
         "popis": "Realizace 10 míst, 100 % penetrace, kabelové vedení (obsahuje nové HDV a navýšení kapacity).",
+        "rozsiritelnost": "Střední – díky novému HDV je kapacita dostatečná, ale kabelové trasy mohou být při dalším rozšiřování komplikované.",
         "pater_svj": 290000,
         "hdv_navyseni": 500000,
         "zakaznik_celkem": 330000,
@@ -59,37 +62,33 @@ naklad_uzivatel_rozvody = ((m["zakaznik_celkem"] * (1 - podil_svj / 100)) / m["m
 celkem_uzivatel = (naklad_uzivatel_rozvody + (m["wallbox_ks"] * coeff))
 
 # --- ZOBRAZENÍ V APP ---
-st.title(f"Prezentace nákladů vzorového projektu: {projekt_nazev}")
-st.subheader(f"Ceny jsou uvedeny: {tax_label}")
+st.title(f"Indikativní kalkulace: {projekt_nazev}")
+st.subheader(f"Cenová hladina: {tax_label}")
 
 col1, col2 = st.columns(2)
 with col1:
     st.metric("Celková investice SVJ", f"{celkem_svj_investice:,.0f} Kč".replace(",", " "))
+    st.info(f"**Rozšiřitelnost:** {m['rozsiritelnost']}")
 with col2:
     st.metric("Náklad na 1 uživatele (vč. WB)", f"{celkem_uzivatel:,.0f} Kč".replace(",", " "))
-
-if podil_svj > 0:
-    st.success(f"💡 SVJ přispívá na zákaznické rozvody v garážích podílem {podil_svj} %.")
+    st.warning("Doporučeno: Modul COMFORT (bez starostí pro SVJ)")
 
 st.divider()
 
 # Tabulka pro náhled
 table_data = [
     {
-        "Položka": "Páteřní rozvody a HDV",
-        "Celkem objekt": f"{(m['pater_svj'] + m['hdv_navyseni']) * coeff:,.0f} Kč".replace(",", " "),
+        "Položka": "Páteřní rozvody a nové HDV",
         "Hradí SVJ": f"{(m['pater_svj'] + m['hdv_navyseni']) * coeff:,.0f} Kč".replace(",", " "),
         "Hradí 1 Uživatel": "0 Kč"
     },
     {
         "Položka": f"Zákaznické rozvody (příspěvek SVJ {podil_svj} %)",
-        "Celkem objekt": f"{m['zakaznik_celkem'] * coeff:,.0f} Kč".replace(",", " "),
         "Hradí SVJ": f"{extra_z_garazi:,.0f} Kč".replace(",", " "),
         "Hradí 1 Uživatel": f"{naklad_uzivatel_rozvody:,.0f} Kč".replace(",", " ")
     },
     {
         "Položka": "Wallbox vč. instalace",
-        "Celkem objekt": f"{(m['wallbox_ks'] * m['mist']) * coeff:,.0f} Kč".replace(",", " "),
         "Hradí SVJ": "0 Kč",
         "Hradí 1 Uživatel": f"{m['wallbox_ks'] * coeff:,.0f} Kč".replace(",", " ")
     }
@@ -100,41 +99,51 @@ st.table(pd.DataFrame(table_data))
 def create_word():
     doc = Document()
     
-    title = doc.add_heading('Indikativní kalkulačka nákladů emobility v SVJ/BD dle vzorové instalace', 0)
+    # 1. Titulka
+    title = doc.add_heading('Indikativní nabídka: PRE POINT RESIDENT', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     p = doc.add_paragraph()
     p.add_run(f'Projekt: {projekt_nazev}').bold = True
-    p.add_run(f'\nModel: {sel_name}')
+    p.add_run(f'\nZvolený model: {sel_name}')
     p.add_run(f'\nCenová hladina: {tax_label}').bold = True
 
-    if podil_svj > 0:
-        p_info = doc.add_paragraph()
-        p_info.add_run(f'Upozornění: Tato kalkulace počítá s příspěvkem SVJ/BD na zákaznické rozvody ve výši {podil_svj} %.').italic = True
+    # 2. Argumentace - Proč Modul COMFORT?
+    doc.add_heading('Klíčové výhody řešení v Modulu COMFORT', level=1)
+    
+    # Rozúčtování
+    para = doc.add_paragraph()
+    para.add_run('Bezstarostné rozúčtování: ').bold = True
+    para.add_run('Při individuálním řešení padá povinnost rozúčtování elektřiny na SVJ, což je administrativně i právně náročné. V modulu COMFORT PRE fakturuje spotřebu přímo koncovému uživateli. SVJ nemá s vyúčtováním žádnou práci.')
 
-    doc.add_heading('Rozdělení nákladů', level=1)
-    table = doc.add_table(rows=1, cols=4)
+    # Řízení výkonu
+    para = doc.add_paragraph()
+    para.add_run('Ochrana proti přetížení: ').bold = True
+    para.add_run('Systém dynamického řízení výkonu (DLM) neustále monitoruje spotřebu celého objektu (výtahy, osvětlení, byty) a dobíjení aut v reálném čase reguluje tak, aby nikdy nedošlo k překročení kapacity hlavního jističe.')
+
+    # Rozšiřitelnost (str 13/14)
+    doc.add_heading('Technická koncepce a rozšířitelnost', level=1)
+    doc.add_paragraph(f'Technický popis: {m["popis"]}')
+    doc.add_paragraph(f'Možnost budoucího rozšíření: {m["rozsiritelnost"]}')
+
+    # 3. Tabulka nákladů
+    doc.add_heading('Ekonomické rozdělení nákladů', level=1)
+    table = doc.add_table(rows=1, cols=3)
     table.style = 'Light Shading Accent 1'
     hdr = table.rows[0].cells
     hdr[0].text = 'Položka'
-    hdr[1].text = 'Celkem objekt'
-    hdr[2].text = 'Hradí SVJ'
-    hdr[3].text = 'Hradí 1 Uživatel'
+    hdr[1].text = 'Hradí SVJ (Fond oprav)'
+    hdr[2].text = 'Hradí 1 Uživatel'
 
     for row_item in table_data:
         cells = table.add_row().cells
         cells[0].text = row_item["Položka"]
-        cells[1].text = row_item["Celkem objekt"]
-        cells[2].text = row_item["Hradí SVJ"]
-        cells[3].text = row_item["Hradí 1 Uživatel"]
+        cells[1].text = row_item["Hradí SVJ"]
+        cells[2].text = row_item["Hradí 1 Uživatel"]
 
-    doc.add_heading('Proč zvolit PRE POINT RESIDENT?', level=1)
-    doc.add_paragraph('Bezpečnost: Centrální vypínání Total Stop a certifikované komponenty.', style='List Bullet')
-    doc.add_paragraph('Správa: Automatické rozúčtování spotřeby přímo mezi PRE a koncového uživatele.', style='List Bullet')
-    doc.add_paragraph('Dynamika: Systém řízení výkonu brání přetížení domovního jističe.', style='List Bullet')
-
+    # 4. Schéma
     if os.path.exists(m["schema"]):
-        doc.add_heading('Schéma zapojení', level=1)
+        doc.add_heading('Schéma zapojení (vzorové)', level=1)
         doc.add_picture(m["schema"], width=Inches(5.0))
 
     target = io.BytesIO()
@@ -142,6 +151,6 @@ def create_word():
     return target.getvalue()
 
 st.divider()
-if st.button("📄 Vygenerovat Indikativní nabídku"):
+if st.button("📄 Vygenerovat Profesionální nabídku (.docx)"):
     doc_bytes = create_word()
-    st.download_button(label="📥 Stáhnout Word (.docx)", data=doc_bytes, file_name=f"Nabidka_{projekt_nazev}.docx")
+    st.download_button(label="📥 Stáhnout Nabídku", data=doc_bytes, file_name=f"Nabidka_PRE_{projekt_nazev}.docx")

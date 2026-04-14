@@ -47,7 +47,7 @@ models = {
 st.sidebar.header("📝 Údaje pro nabídku")
 projekt_nazev = st.sidebar.text_input("Název projektu / SVJ:", "SVJ ")
 sel_name = st.sidebar.selectbox("Varianta realizace:", list(models.keys()))
-podil_svj = st.sidebar.slider("Podíl SVJ na rozvodech v garážích (%)", 0, 100, 0)
+podil_svj = st.sidebar.slider("Podíl SVJ na zákaznických rozvodech v garážích (%)", 0, 100, 0)
 dph_check = st.sidebar.checkbox("Zobrazit ceny s DPH (12 %)", value=False)
 
 # Výchozí parametry pro zvolený model

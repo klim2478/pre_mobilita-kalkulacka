@@ -153,4 +153,4 @@ def create_word():
 st.divider()
 if st.button("📄 Vygenerovat prezentaci (.docx)"):
     doc_bytes = create_word()
-    st.download_button(label="📥 Stáhnout Nabídku", data=doc_bytes, file_name=f"Nabidka_PRE_{projekt_nazev}.docx")
+    st.download_button(label="📥 Stáhnout prezentaci", data=doc_bytes, file_name=f"Nabidka_PRE_{projekt_nazev}.docx")

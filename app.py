@@ -119,7 +119,7 @@ def create_word():
     font.size = Pt(11)
 
     # 1. Titulní strana
-    title = doc.add_heading('Indikativní nákladovost emobility v SVJ/BD', 0)
+    title = doc.add_heading('Indikativní nákladovost emobility v SVJ/BD dle vzorové instalace', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     p = doc.add_paragraph()
@@ -187,7 +187,7 @@ if st.button("📄 Vygenerovat prezentaci pro SVJ (.docx)"):
     with st.spinner('Generuji dokument...'):
         doc_bytes = create_word()
         st.download_button(
-            label="📥 Stáhnout hotovou nabídku",
+            label="📥 Stáhnout hotovou prezentaci",
             data=doc_bytes,
             file_name=f"Nabidka_PRE_{projekt_nazev.replace(' ', '_')}.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
